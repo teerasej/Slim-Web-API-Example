@@ -2,6 +2,16 @@
 require 'vendor/autoload.php';
 
 $app = new \Slim\App;
+$container = $app->getContainer();
+
+// Add monolog to container as a service
+$container['logger'] = function($c) {
+    $logger = new \Monolog\Logger('my_logger');
+    $file_handler = new \Monolog\Handler\StreamHandler("../logs/app.log");
+    $logger->pushHandler($file_handler);
+    return $logger;
+};
+
 
 // Define CorsSlim for allow cross-platform access
 $corsOptions = array(
@@ -33,6 +43,9 @@ $app->post('/', function($request, $response){
 });
 
 $app->post('/sign-in', function($request, $response){
+
+  $this->logger->addInfo("POST request arrived...");
+
   $input = $request->getParsedBody();
   
   $data = json_decode($input, true)
