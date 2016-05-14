@@ -27,8 +27,16 @@ $app->get('/hello/{name}', function ( $request,  $response) {
 });
 
 
-$app->post('/sign-in', function($request, $response){
+$app->post('/', function($request, $response){
   $response->getBody()->write("POST!");
+  return $response;
+});
+
+$app->post('/sign-in', function($request, $response){
+  $input = $request->getParsedBody();
+  
+  $data = json_decode($input, true)
+  $response->getBody()->write($data['username']);
   return $response;
 });
 
