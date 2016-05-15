@@ -1,7 +1,16 @@
-<?php
+<?php 
+
 require 'vendor/autoload.php';
 
-$app = new \Slim\App;
+$config['displayErrorDetails'] = true;
+
+$config['db']['host']   = "localhost";
+$config['db']['user']   = "root";
+$config['db']['pass']   = "root";
+$config['db']['dbname'] = "mynews";
+
+
+$app = new \Slim\App(["settings" => $config]);
 $container = $app->getContainer();
 
 // Add monolog to container as a service
@@ -11,46 +20,65 @@ $container['logger'] = function($c) {
     $logger->pushHandler($file_handler);
     return $logger;
 };
+$container['db'] = function ($c) {
+    $db = $c['settings']['db'];
+    $pdo = new PDO("mysql:host=" . $db['host'] . ";dbname=" . $db['dbname'],
+        $db['user'], $db['pass']);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    return $pdo;
+};
 
 
-// Define CorsSlim for allow cross-platform access
-// $corsOptions = array(
-//     "origin" => "*",
-//     "allowMethods" => array("POST, GET")
-//     );
-// $cors = new \CorsSlim\CorsSlim($corsOptions);
-// $app->add($cors);
-
-
-// Below is sample routing
 
 $app->get('/', function ( $request,  $response) {
 	$response->write("Hi, This is Pon!");
 	return $response;
 });
 
-$app->get('/hello/{name}', function ( $request,  $response) {
-    $name = $request->getAttribute('name');
-    $response->getBody()->write("Hello, $name");
+$app->get('/news/A', function ( $request,  $response) {
 
-    return $response;
+	$result = array('title' => 'A', 'imageUrl' => 'this url','content'=>'blah blah blah');
+
+	$response = $response->withJson($result);
+
+	// $response->write("Hi, This is Pon!");
+	return $response;
 });
 
+$app->get('/news', function ( $request,  $response) {
 
-$app->post('/', function($request, $response){
-  $response->getBody()->write("POST!");
-  return $response;
+	$result = array(
+		array('title' => 'A', 'imageUrl' => 'this url','content'=>'blah blah blah'),
+		array('title' => 'B', 'imageUrl' => 'this url','content'=>'blah blah blah'),
+		array('title' => 'C', 'imageUrl' => 'this url','content'=>'blah blah blah'));
+
+	$response = $response->withJson($result);
+
+	// $response->write("Hi, This is Pon!");
+	return $response;
 });
 
-$app->post('/sign-in', function($request, $response){
+$app->get('/news-test', function ($request, $response) {
 
-  $data = $request->getParsedBody();
+	// $resultRows = $this->db->exec('SELECT * FROM news');
+	$result = array();
+	foreach($this->db->query('SELECT * FROM news') as $row) {
+	   array_push($result, $row);
+	}
+	
+	// $result = array(
+	// 	array('title' => 'A', 'imageUrl' => 'this url','content'=>'blah blah blah'),
+	// 	array('title' => 'B', 'imageUrl' => 'this url','content'=>'blah blah blah'),
+	// 	array('title' => 'C', 'imageUrl' => 'this url','content'=>'blah blah blah'));
 
-  // $this->logger->addInfo('POST data: ' . var_dump($data));
-  $response->getBody()->write($data['username']);
-  return $response;
+	$response = $response->withJson($result);
+
+	// $response->write("Hi, This is Pon!");
+	return $response;
 });
 
 
 $app->run();
+
 ?>
