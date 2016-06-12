@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 require 'vendor/autoload.php';
 
@@ -11,8 +11,18 @@ $config['db']['dbname'] = "mynews";
 
 
 $app = new \Slim\App(["settings" => $config]);
-$container = $app->getContainer();
 
+// Add CorsSlim
+$corsOptions = array(
+    "origin" => "*",
+    "exposeHeaders" => array("Content-Type", "X-Requested-With", "X-authentication", "X-client"),
+    "allowMethods" => array('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
+);
+$cors = new \CorsSlim\CorsSlim($corsOptions);
+$app->add($cors);
+
+
+$container = $app->getContainer();
 // Add monolog to container as a service
 $container['logger'] = function($c) {
     $logger = new \Monolog\Logger('my_logger');
@@ -66,7 +76,7 @@ $app->get('/news-test', function ($request, $response) {
 	foreach($this->db->query('SELECT * FROM news') as $row) {
 	   array_push($result, $row);
 	}
-	
+
 	// $result = array(
 	// 	array('title' => 'A', 'imageUrl' => 'this url','content'=>'blah blah blah'),
 	// 	array('title' => 'B', 'imageUrl' => 'this url','content'=>'blah blah blah'),
