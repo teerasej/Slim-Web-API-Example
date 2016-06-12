@@ -1,84 +1,56 @@
-<?php 
+<?php
+// echo "OK";
 
 require 'vendor/autoload.php';
 
-$config['displayErrorDetails'] = true;
+$app = new \Slim\App;
+$corsOptions = array(
+    "origin" => "*",
+    "exposeHeaders" => array("Content-Type", "X-Requested-With", "X-authentication", "X-client"),
+    "allowMethods" => array('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
+);
+$cors = new \CorsSlim\CorsSlim($corsOptions);
+$app->add($cors);
 
-$config['db']['host']   = "localhost";
-$config['db']['user']   = "root";
-$config['db']['pass']   = "root";
-$config['db']['dbname'] = "mynews";
+$app->get('/', function($request, $response){
 
+	$result = array('message'=>'Hi, I am Web API.');
+	$newResponse = $response->withJson($result);
+	// $response->write('Hi, I am Web API.');
+	return $newResponse;
 
-$app = new \Slim\App(["settings" => $config]);
-$container = $app->getContainer();
-
-// Add monolog to container as a service
-$container['logger'] = function($c) {
-    $logger = new \Monolog\Logger('my_logger');
-    $file_handler = new \Monolog\Handler\StreamHandler("logs/app.log");
-    $logger->pushHandler($file_handler);
-    return $logger;
-};
-$container['db'] = function ($c) {
-    $db = $c['settings']['db'];
-    $pdo = new PDO("mysql:host=" . $db['host'] . ";dbname=" . $db['dbname'],
-        $db['user'], $db['pass']);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    return $pdo;
-};
-
-
-
-$app->get('/', function ( $request,  $response) {
-	$response->write("Hi, This is Pon!");
-	return $response;
 });
 
-$app->get('/news/A', function ( $request,  $response) {
+$app->get('/news', function($request, $response){
 
-	$result = array('title' => 'A', 'imageUrl' => 'this url','content'=>'blah blah blah');
+	$result = array(array('title'=>'A', 'imageUrl'=>'assets/a.jpg', 'content'=>'blah blah blah'),
+		array('title'=>'A', 'imageUrl'=>'assets/a.jpg', 'content'=>'blah blah blah'),
+		array('title'=>'A', 'imageUrl'=>'assets/a.jpg', 'content'=>'blah blah blah')
+		);
+	$newResponse = $response->withJson($result);
+	return $newResponse;
 
-	$response = $response->withJson($result);
-
-	// $response->write("Hi, This is Pon!");
-	return $response;
 });
 
-$app->get('/news', function ( $request,  $response) {
+$app->get('/news/amount/{count}',function($request, $response){
 
-	$result = array(
-		array('title' => 'A', 'imageUrl' => 'this url','content'=>'blah blah blah'),
-		array('title' => 'B', 'imageUrl' => 'this url','content'=>'blah blah blah'),
-		array('title' => 'C', 'imageUrl' => 'this url','content'=>'blah blah blah'));
+	$newsCount = $request->getAttribute('count');
 
-	$response = $response->withJson($result);
+	$result = array('newsCount' => $newsCount);
+	$newResponse = $response->withJson($result);
+	return $newResponse;
 
-	// $response->write("Hi, This is Pon!");
-	return $response;
 });
 
-$app->get('/news-test', function ($request, $response) {
+$app->post('/news/search/', function($request, $response){
 
-	// $resultRows = $this->db->exec('SELECT * FROM news');
-	$result = array();
-	foreach($this->db->query('SELECT * FROM news') as $row) {
-	   array_push($result, $row);
-	}
-	
-	// $result = array(
-	// 	array('title' => 'A', 'imageUrl' => 'this url','content'=>'blah blah blah'),
-	// 	array('title' => 'B', 'imageUrl' => 'this url','content'=>'blah blah blah'),
-	// 	array('title' => 'C', 'imageUrl' => 'this url','content'=>'blah blah blah'));
+	$keyword = $request->getParam('keyword');
 
-	$response = $response->withJson($result);
+	$result = array('searchKeyword' => $keyword );
+	$newResponse = $response->withJson($result);
+	return $newResponse;
 
-	// $response->write("Hi, This is Pon!");
-	return $response;
 });
-
 
 $app->run();
-
-?>
+ ?>
