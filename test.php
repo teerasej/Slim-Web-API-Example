@@ -1,16 +1,16 @@
-<?php 
+<?php
 // echo "OK";
 
 require 'vendor/autoload.php';
 
 $app = new \Slim\App;
-// $corsOptions = array(
-//     "origin" => "*",
-//     "exposeHeaders" => array("Content-Type", "X-Requested-With", "X-authentication", "X-client"),
-//     "allowMethods" => array('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
-// );
-// $cors = new \CorsSlim\CorsSlim($corsOptions);
-// $app->add($cors);
+$corsOptions = array(
+    "origin" => "*",
+    "exposeHeaders" => array("Content-Type", "X-Requested-With", "X-authentication", "X-client"),
+    "allowMethods" => array('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
+);
+$cors = new \CorsSlim\CorsSlim($corsOptions);
+$app->add($cors);
 
 $app->get('/', function($request, $response){
 
@@ -22,7 +22,7 @@ $app->get('/', function($request, $response){
 });
 
 $app->get('/news', function($request, $response){
-	
+
 	$result = array(array('title'=>'A', 'imageUrl'=>'assets/a.jpg', 'content'=>'blah blah blah'),
 		array('title'=>'A', 'imageUrl'=>'assets/a.jpg', 'content'=>'blah blah blah'),
 		array('title'=>'A', 'imageUrl'=>'assets/a.jpg', 'content'=>'blah blah blah')
@@ -46,21 +46,11 @@ $app->post('/news/search/', function($request, $response){
 
 	$keyword = $request->getParam('keyword');
 
-	$result = $array('searchKeyword' => $keyword );
+	$result = array('searchKeyword' => $keyword );
 	$newResponse = $response->withJson($result);
 	return $newResponse;
 
 });
-
-
-
-
-
-
-
-
-
-
 
 $app->run();
  ?>
